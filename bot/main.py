@@ -1,19 +1,28 @@
-from aiohttp import web
 import os
-import logging
+import time
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'OK - Ultra Simple Server')
+    
+    def log_message(self, format, *args):
+        print(f"Request: {format % args}")
 
-async def health_check(request):
-    logger.info("Health check called")
-    return web.Response(text="OK - Server is running")
-
-app = web.Application()
-app.router.add_get('/health', health_check)
-app.router.add_get('/', health_check)
+def main():
+    port = int(os.environ.get("PORT", 8000))
+    print(f"🚀 Starting ULTRA SIMPLE server on port {port}")
+    
+    server = HTTPServer(('0.0.0.0', port), SimpleHandler)
+    print("✅ Server started successfully!")
+    
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("Server stopped")
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8000))
-    logger.info(f"Starting HTTP server on port {port}")
-    web.run_app(app, host='0.0.0.0', port=port, print=None)
+    main()
